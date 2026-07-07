@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DMTAE Administration Dashboard</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090b0d;
+      --surface: rgba(20, 24, 28, 0.74);
+      --surface-strong: rgba(28, 34, 39, 0.92);
+      --stroke: rgba(221, 229, 235, 0.12);
+      --stroke-strong: rgba(221, 229, 235, 0.22);
+      --text: #eef4f2;
+      --muted: #9da9a6;
+      --quiet: #6e7a78;
+      --green: #34d399;
+      --amber: #f3b43f;
+      --red: #f45d5d;
+      --cyan: #4dd6df;
+      --blue: #70a7ff;
+      --violet: #b692f6;
+      --panel-radius: 8px;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.42);
+      --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      min-height: 100%;
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        radial-gradient(circle at 50% 0%, rgba(77, 214, 223, 0.12), transparent 42%),
+        #090b0d;
+      background-size: 34px 34px, 34px 34px, 100% 100%, auto;
+      color: var(--text);
+      font-family: var(--sans);
+      letter-spacing: 0;
+    }
+
+    body::before {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      content: "";
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent 22%, rgba(255, 255, 255, 0.03));
+      opacity: 0.6;
+    }
+
+    ::selection {
+      background: rgba(77, 214, 223, 0.35);
+    }
+
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 12px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(157, 169, 166, 0.45);
+      border: 3px solid rgba(9, 11, 13, 0.95);
+      border-radius: 8px;
+    }
+
+    .shell {
+      width: min(1720px, calc(100vw - 32px));
+      margin: 0 auto;
+      padding: 20px 0 28px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      min-height: 72px;
+      padding: 18px 20px;
+      border: 1px solid var(--stroke);
+      border-radius: var(--panel-radius);
+      background: rgba(16, 20, 23, 0.78);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(20px);
+    }
+
+    .brand {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      position: relative;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border: 1px solid rgba(77, 214, 223, 0.5);
+      border-radius: 8px;
+      background:
+        linear-gradient(135deg, rgba(77, 214, 223, 0.22), rgba(52, 211, 153, 0.09)),
+        rgba(255, 255, 255, 0.04);
+      overflow: hidden;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      position: absolute;
+      content: "";
+      background: rgba(238, 244, 242, 0.86);
+    }
+
+    .brand-mark::before {
+      width: 24px;
+      height: 2px;
+      left: 8px;
+      top: 14px;
+      box-shadow: 0 7px 0 rgba(77, 214, 223, 0.9), 0 14px 0 rgba(52, 211, 153, 0.85);
+    }
+
+    .brand-mark::after {
+      width: 2px;
+      height: 24px;
+      left: 17px;
+      top: 8px;
+      box-shadow: 7px 0 0 rgba(243, 180, 63, 0.82);
+      opacity: 0.72;
+    }
+
+    .brand-copy {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      margin: 0 0 4px;
+      color: var(--cyan);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      overflow: hidden;
+      font-size: clamp(1.15rem, 2.4vw, 2rem);
+      font-weight: 760;
+      line-height: 1.08;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+      padding: 0 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.045);
+      color: var(--muted);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--quiet);
+      box-shadow: 0 0 0 4px rgba(110, 122, 120, 0.12);
+    }
+
+    .dot.healthy {
+      background: var(--green);
+      box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.14), 0 0 18px rgba(52, 211, 153, 0.38);
+    }
+
+    .dot.decaying,
+    .dot.warming {
+      background: var(--amber);
+      box-shadow: 0 0 0 4px rgba(243, 180, 63, 0.14), 0 0 18px rgba(243, 180, 63, 0.36);
+    }
+
+    .dot.evicted,
+    .dot.offline {
+      background: var(--red);
+      box-shadow: 0 0 0 4px rgba(244, 93, 93, 0.14), 0 0 18px rgba(244, 93, 93, 0.36);
+    }
+
+    .metric-strip {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin: 16px 0;
+    }
+
+    .panel {
+      position: relative;
+      border: 1px solid var(--stroke);
+      border-radius: var(--panel-radius);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.025)),
+        var(--surface);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+    }
+
+    .panel::before {
+      position: absolute;
+      top: 0;
+      right: 0;
+      left: 0;
+      height: 1px;
+      content: "";
+      background: linear-gradient(90deg, transparent, rgba(238, 244, 242, 0.38), transparent);
+      opacity: 0.7;
+    }
+
+    .kpi {
+      min-height: 132px;
+      padding: 18px;
+    }
+
+    .kpi-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+    }
+
+    .kpi-value {
+      margin: 16px 0 12px;
+      font-family: var(--mono);
+      font-size: clamp(1.7rem, 4vw, 2.5rem);
+      font-weight: 760;
+      line-height: 1;
+    }
+
+    .kpi-sub {
+      color: var(--quiet);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .meter {
+      position: relative;
+      width: 100%;
+      height: 8px;
+      margin-top: 16px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.07);
+      overflow: hidden;
+    }
+
+    .meter-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--value, 0%);
+      max-width: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--green), var(--cyan));
+      transition: width 420ms ease, background 420ms ease;
+    }
+
+    .meter-fill.amber {
+      background: linear-gradient(90deg, var(--amber), #ffd37e);
+    }
+
+    .meter-fill.red {
+      background: linear-gradient(90deg, var(--red), #ff9a9a);
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.8fr) minmax(360px, 0.8fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 58px;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--stroke);
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 0.98rem;
+      font-weight: 720;
+    }
+
+    .panel-caption {
+      color: var(--quiet);
+      font-family: var(--mono);
+      font-size: 0.76rem;
+    }
+
+    .live-panel {
+      min-height: 620px;
+    }
+
+    .grid-head,
+    .metric-row {
+      display: grid;
+      grid-template-columns: minmax(72px, 0.55fr) minmax(180px, 1.5fr) minmax(90px, 0.7fr) minmax(150px, 1fr) minmax(92px, 0.72fr) minmax(92px, 0.7fr);
+      gap: 12px;
+      align-items: center;
+    }
+
+    .grid-head {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--stroke);
+      background: rgba(14, 17, 20, 0.94);
+      color: var(--quiet);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    .rows {
+      max-height: 552px;
+      overflow: auto;
+    }
+
+    .metric-row {
+      min-height: 58px;
+      padding: 11px 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      animation: rowIn 280ms ease both;
+      transition: background 220ms ease, border-color 220ms ease;
+    }
+
+    .metric-row:hover {
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .metric-row.decaying {
+      border-left: 2px solid rgba(243, 180, 63, 0.9);
+    }
+
+    .metric-row.healthy {
+      border-left: 2px solid rgba(52, 211, 153, 0.9);
+    }
+
+    .metric-row.evicted {
+      border-left: 2px solid rgba(244, 93, 93, 0.9);
+      opacity: 0.76;
+    }
+
+    .cell-id,
+    .cell-num,
+    .cell-age {
+      font-family: var(--mono);
+      font-size: 0.84rem;
+    }
+
+    .cell-metric {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 660;
+    }
+
+    .state-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 82px;
+      min-height: 28px;
+      padding: 0 9px;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      font-family: var(--mono);
+      font-size: 0.73rem;
+      text-transform: uppercase;
+    }
+
+    .state-chip.healthy {
+      border-color: rgba(52, 211, 153, 0.36);
+      background: rgba(52, 211, 153, 0.1);
+      color: #b8ffe0;
+    }
+
+    .state-chip.decaying {
+      border-color: rgba(243, 180, 63, 0.38);
+      background: rgba(243, 180, 63, 0.11);
+      color: #ffdf9c;
+    }
+
+    .state-chip.evicted,
+    .state-chip.offline {
+      border-color: rgba(244, 93, 93, 0.42);
+      background: rgba(244, 93, 93, 0.12);
+      color: #ffc2c2;
+    }
+
+    .retention-bar {
+      display: grid;
+      grid-template-columns: minmax(58px, 0.45fr) minmax(70px, 1fr);
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+
+    .bar-track {
+      position: relative;
+      height: 8px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      overflow: hidden;
+    }
+
+    .bar-track::before {
+      position: absolute;
+      inset: 0;
+      content: "";
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+      animation: barSheen 2s linear infinite;
+      opacity: 0.35;
+    }
+
+    .bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: var(--retention, 0%);
+      border-radius: inherit;
+      background: var(--green);
+      transition: width 520ms ease, background 520ms ease;
+    }
+
+    .bar-fill.decaying {
+      background: var(--amber);
+    }
+
+    .bar-fill.evicted {
+      background: var(--red);
+    }
+
+    .side-stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .canvas-wrap {
+      height: 178px;
+      padding: 12px 18px 18px;
+    }
+
+    #retentionCanvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        rgba(0, 0, 0, 0.16);
+      background-size: 28px 28px;
+    }
+
+    .analytics-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 0 18px 18px;
+    }
+
+    .mini-stat {
+      min-height: 84px;
+      padding: 12px;
+      border: 1px solid var(--stroke);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.035);
+    }
+
+    .mini-stat span {
+      display: block;
+      color: var(--quiet);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+    }
+
+    .mini-stat strong {
+      display: block;
+      margin-top: 10px;
+      font-family: var(--mono);
+      font-size: 1.1rem;
+    }
+
+    .evicted-list {
+      max-height: 236px;
+      overflow: auto;
+      padding: 8px 18px 18px;
+    }
+
+    .evicted-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 44px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .evicted-item b {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 0.86rem;
+    }
+
+    .evicted-item span {
+      color: var(--quiet);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+    }
+
+    .empty {
+      display: grid;
+      min-height: 220px;
+      place-items: center;
+      padding: 28px;
+      color: var(--quiet);
+      font-family: var(--mono);
+      text-align: center;
+    }
+
+    .scanline {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(180deg, transparent, rgba(77, 214, 223, 0.08), transparent);
+      transform: translateY(-100%);
+      animation: scanline 4s ease-in-out infinite;
+    }
+
+    @keyframes rowIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes barSheen {
+      from {
+        transform: translateX(-100%);
+      }
+      to {
+        transform: translateX(100%);
+      }
+    }
+
+    @keyframes scanline {
+      0%, 28% {
+        transform: translateY(-100%);
+      }
+      70%, 100% {
+        transform: translateY(100%);
+      }
+    }
+
+    @media (max-width: 1180px) {
+      .metric-strip {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .shell {
+        width: min(100vw - 20px, 1720px);
+        padding-top: 10px;
+      }
+
+      .topbar {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions {
+        justify-content: flex-start;
+      }
+
+      h1 {
+        white-space: normal;
+      }
+
+      .metric-strip,
+      .analytics-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-head {
+        display: none;
+      }
+
+      .metric-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+        align-items: start;
+      }
+
+      .metric-row > div {
+        min-width: 0;
+      }
+
+      .metric-row > div::before {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--quiet);
+        font-family: var(--mono);
+        font-size: 0.68rem;
+        text-transform: uppercase;
+      }
+
+      .cell-id::before { content: "ID"; }
+      .cell-metric::before { content: "Metric"; }
+      .cell-num::before { content: "Value"; }
+      .cell-retention::before { content: "Retention"; }
+      .cell-state::before { content: "State"; }
+      .cell-age::before { content: "Age"; }
+
+      .retention-bar {
+        grid-template-columns: minmax(58px, auto) minmax(120px, 1fr);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div class="brand-copy">
+          <p class="eyebrow">DMTAE Control Plane</p>
+          <h1>Distributed Multi-Tier Analytics Engine</h1>
+        </div>
+      </div>
+      <div class="top-actions">
+        <div class="pill"><span id="connectionDot" class="dot offline"></span><span id="connectionText">OFFLINE</span></div>
+        <div class="pill">TCP 8080</div>
+        <div class="pill">HTTP 5000</div>
+        <div class="pill" id="lastRefresh">SYNC --:--:--</div>
+      </div>
+    </header>
+
+    <section class="metric-strip" aria-label="System summary">
+      <article class="panel kpi">
+        <div class="kpi-label"><span>Active Cache</span><span id="cacheRatio">0 / 0</span></div>
+        <div class="kpi-value" id="cacheSize">0</div>
+        <div class="kpi-sub" id="cacheSub">utilization 0.0%</div>
+        <div class="meter"><div class="meter-fill" id="cacheMeter"></div></div>
+      </article>
+      <article class="panel kpi">
+        <div class="kpi-label"><span>Retention</span><span id="retentionState">OFFLINE</span></div>
+        <div class="kpi-value" id="avgRetention">0.0%</div>
+        <div class="kpi-sub" id="retentionSub">minimum 0.0%</div>
+        <div class="meter"><div class="meter-fill" id="retentionMeter"></div></div>
+      </article>
+      <article class="panel kpi">
+        <div class="kpi-label"><span>Throughput</span><span>10s window</span></div>
+        <div class="kpi-value" id="throughput">0.0</div>
+        <div class="kpi-sub" id="throughputSub">events per second</div>
+        <div class="meter"><div class="meter-fill" id="throughputMeter"></div></div>
+      </article>
+      <article class="panel kpi">
+        <div class="kpi-label"><span>Memory</span><span>engine cache</span></div>
+        <div class="kpi-value" id="memory">0 B</div>
+        <div class="kpi-sub" id="memorySub">middleware 0 B</div>
+        <div class="meter"><div class="meter-fill" id="memoryMeter"></div></div>
+      </article>
+    </section>
+
+    <section class="main-grid">
+      <article class="panel live-panel">
+        <div class="scanline" aria-hidden="true"></div>
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Live Working Cache</h2>
+            <div class="panel-caption" id="liveCaption">Awaiting stream</div>
+          </div>
+          <div class="panel-caption" id="gridStats">0 healthy / 0 decaying</div>
+        </div>
+        <div class="grid-head" aria-hidden="true">
+          <div>ID</div>
+          <div>Metric</div>
+          <div>Value</div>
+          <div>Retention</div>
+          <div>State</div>
+          <div>Age</div>
+        </div>
+        <div class="rows" id="metricRows">
+          <div class="empty">Waiting for middleware data</div>
+        </div>
+      </article>
+
+      <aside class="side-stack">
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Decay Envelope</h2>
+              <div class="panel-caption">retention distribution</div>
+            </div>
+          </div>
+          <div class="canvas-wrap">
+            <canvas id="retentionCanvas" width="600" height="220"></canvas>
+          </div>
+          <div class="analytics-grid">
+            <div class="mini-stat"><span>Eviction Threshold</span><strong id="threshold">15.0%</strong></div>
+            <div class="mini-stat"><span>Evicted Total</span><strong id="evictedTotal">0</strong></div>
+            <div class="mini-stat"><span>Parsed Total</span><strong id="parsedTotal">0</strong></div>
+            <div class="mini-stat"><span>Malformed</span><strong id="malformedTotal">0</strong></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Eviction Ledger</h2>
+              <div class="panel-caption" id="evictedCaption">recently removed from active cache</div>
+            </div>
+          </div>
+          <div class="evicted-list" id="evictedList">
+            <div class="empty">No evictions recorded</div>
+          </div>
+        </article>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    const API_BASE = window.location.protocol === "file:" ? "http://localhost:5000" : window.location.origin;
+    const pollMs = 1000;
+    const elements = {
+      connectionDot: document.getElementById("connectionDot"),
+      connectionText: document.getElementById("connectionText"),
+      lastRefresh: document.getElementById("lastRefresh"),
+      cacheRatio: document.getElementById("cacheRatio"),
+      cacheSize: document.getElementById("cacheSize"),
+      cacheSub: document.getElementById("cacheSub"),
+      cacheMeter: document.getElementById("cacheMeter"),
+      retentionState: document.getElementById("retentionState"),
+      avgRetention: document.getElementById("avgRetention"),
+      retentionSub: document.getElementById("retentionSub"),
+      retentionMeter: document.getElementById("retentionMeter"),
+      throughput: document.getElementById("throughput"),
+      throughputSub: document.getElementById("throughputSub"),
+      throughputMeter: document.getElementById("throughputMeter"),
+      memory: document.getElementById("memory"),
+      memorySub: document.getElementById("memorySub"),
+      memoryMeter: document.getElementById("memoryMeter"),
+      liveCaption: document.getElementById("liveCaption"),
+      gridStats: document.getElementById("gridStats"),
+      metricRows: document.getElementById("metricRows"),
+      threshold: document.getElementById("threshold"),
+      evictedTotal: document.getElementById("evictedTotal"),
+      parsedTotal: document.getElementById("parsedTotal"),
+      malformedTotal: document.getElementById("malformedTotal"),
+      evictedCaption: document.getElementById("evictedCaption"),
+      evictedList: document.getElementById("evictedList"),
+      retentionCanvas: document.getElementById("retentionCanvas")
+    };
+
+    const number = new Intl.NumberFormat("en-US", { maximumFractionDigits: 1 });
+    const integer = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+    let polling = false;
+    let lastMetricIds = new Set();
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function stateFor(item) {
+      const retention = Number(item.retention || 0);
+      if (item.evicted || item.state === "evicted" || retention < 0.15) return "evicted";
+      if (item.state === "decaying" || retention < 0.6) return "decaying";
+      return "healthy";
+    }
+
+    function setDot(state) {
+      elements.connectionDot.className = `dot ${state}`;
+      elements.connectionText.textContent = state.toUpperCase();
+    }
+
+    function setMeter(element, percent, state) {
+      element.style.setProperty("--value", `${Math.max(0, Math.min(100, percent))}%`);
+      element.classList.toggle("amber", state === "decaying" || state === "warming");
+      element.classList.toggle("red", state === "evicted" || state === "offline");
+    }
+
+    function formatBytes(bytes) {
+      const value = Number(bytes || 0);
+      if (value < 1024) return `${integer.format(value)} B`;
+      if (value < 1024 * 1024) return `${number.format(value / 1024)} KB`;
+      if (value < 1024 * 1024 * 1024) return `${number.format(value / 1024 / 1024)} MB`;
+      return `${number.format(value / 1024 / 1024 / 1024)} GB`;
+    }
+
+    function formatAge(seconds) {
+      const value = Number(seconds || 0);
+      if (value < 60) return `${number.format(value)}s`;
+      return `${number.format(value / 60)}m`;
+    }
+
+    async function readJson(path) {
+      const response = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+      if (!response.ok) {
+        throw new Error(`${path} returned HTTP ${response.status}`);
+      }
+      return response.json();
+    }
+
+    async function poll() {
+      if (polling) return;
+      polling = true;
+      try {
+        const [live, analytics] = await Promise.all([
+          readJson("/api/metrics/live"),
+          readJson("/api/metrics/analytics")
+        ]);
+        render(live, analytics);
+      } catch (error) {
+        renderOffline(error);
+      } finally {
+        polling = false;
+      }
+    }
+
+    function render(live, analytics) {
+      const state = live.status?.state || "offline";
+      const cache = live.cache || {};
+      const decay = analytics.decay || {};
+      const memory = analytics.memory || {};
+      const throughput = analytics.throughput || {};
+      const items = Array.isArray(cache.items) ? cache.items : [];
+      const evicted = Array.isArray(cache.evicted) ? cache.evicted : [];
+      const averageRetention = Number(decay.averageRetention || 0) * 100;
+      const minimumRetention = Number(decay.minimumRetention || 0) * 100;
+      const cacheUtilization = Number(cache.utilization || 0) * 100;
+      const streamRate = Number(throughput.streamEventsPerSecond10s || 0);
+      const memoryPercent = Math.min(100, Number(memory.cacheUtilization || 0) * 100);
+
+      setDot(state);
+      elements.lastRefresh.textContent = `SYNC ${new Date().toLocaleTimeString()}`;
+      elements.cacheRatio.textContent = `${integer.format(cache.size || 0)} / ${integer.format(cache.capacity || 0)}`;
+      elements.cacheSize.textContent = integer.format(cache.size || 0);
+      elements.cacheSub.textContent = `utilization ${number.format(cacheUtilization)}%`;
+      setMeter(elements.cacheMeter, cacheUtilization, state);
+      elements.retentionState.textContent = state.toUpperCase();
+      elements.avgRetention.textContent = `${number.format(averageRetention)}%`;
+      elements.retentionSub.textContent = `minimum ${number.format(minimumRetention)}%`;
+      setMeter(elements.retentionMeter, averageRetention, averageRetention < 15 ? "evicted" : averageRetention < 60 ? "decaying" : "healthy");
+      elements.throughput.textContent = number.format(streamRate);
+      elements.throughputSub.textContent = `${number.format(throughput.engineParsedPerSecond || 0)} engine parsed/s`;
+      setMeter(elements.throughputMeter, Math.min(100, streamRate * 6), streamRate <= 0 ? "offline" : "healthy");
+      elements.memory.textContent = formatBytes(memory.engineBytes || 0);
+      elements.memorySub.textContent = `middleware ${formatBytes(memory.middlewareEstimatedBytes || 0)}`;
+      setMeter(elements.memoryMeter, memoryPercent, memoryPercent > 88 ? "decaying" : "healthy");
+      elements.threshold.textContent = `${number.format(Number(decay.evictionThreshold || 0) * 100)}%`;
+      elements.evictedTotal.textContent = integer.format(decay.evictedTotal || 0);
+      elements.parsedTotal.textContent = integer.format(throughput.parsedTotal || 0);
+      elements.malformedTotal.textContent = integer.format(throughput.malformedTotal || 0);
+      elements.liveCaption.textContent = `${items.length} live rows, ${cache.evictedRecent || 0} recent evictions`;
+      elements.gridStats.textContent = `${cache.healthy || 0} healthy / ${cache.decaying || 0} decaying`;
+      elements.evictedCaption.textContent = `${evicted.length} recent removals`;
+
+      renderRows(items);
+      renderEvicted(evicted);
+      drawRetention(items);
+    }
+
+    function renderRows(items) {
+      if (!items.length) {
+        elements.metricRows.innerHTML = '<div class="empty">Waiting for engine metrics</div>';
+        lastMetricIds = new Set();
+        return;
+      }
+      const nextIds = new Set();
+      const html = items.slice(0, 160).map((item) => {
+        const state = stateFor(item);
+        const id = Number(item.id || 0);
+        nextIds.add(id);
+        const retention = Math.max(0, Math.min(100, Number(item.retentionPercent || 0)));
+        const novelty = lastMetricIds.has(id) ? "" : " data-new=\"true\"";
+        return `
+          <div class="metric-row ${state}"${novelty}>
+            <div class="cell-id">#${integer.format(id)}</div>
+            <div class="cell-metric" title="${escapeHtml(item.metric)}">${escapeHtml(item.metric)}</div>
+            <div class="cell-num">${number.format(Number(item.value || 0))}</div>
+            <div class="cell-retention retention-bar">
+              <span>${number.format(retention)}%</span>
+              <span class="bar-track"><span class="bar-fill ${state}" style="--retention:${retention}%"></span></span>
+            </div>
+            <div class="cell-state"><span class="state-chip ${state}">${state}</span></div>
+            <div class="cell-age">${formatAge(item.ageSeconds)}</div>
+          </div>
+        `;
+      }).join("");
+      elements.metricRows.innerHTML = html;
+      lastMetricIds = nextIds;
+    }
+
+    function renderEvicted(items) {
+      if (!items.length) {
+        elements.evictedList.innerHTML = '<div class="empty">No evictions recorded</div>';
+        return;
+      }
+      elements.evictedList.innerHTML = items.slice(0, 60).map((item) => `
+        <div class="evicted-item">
+          <div>
+            <b title="${escapeHtml(item.metric)}">${escapeHtml(item.metric)}</b>
+            <span>#${integer.format(item.id || 0)} value ${number.format(Number(item.value || 0))}</span>
+          </div>
+          <span>${number.format(Number(item.retentionPercent || 0))}%</span>
+        </div>
+      `).join("");
+    }
+
+    function drawRetention(items) {
+      const canvas = elements.retentionCanvas;
+      const context = canvas.getContext("2d");
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+      canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      context.clearRect(0, 0, rect.width, rect.height);
+
+      const padding = 16;
+      const width = rect.width - padding * 2;
+      const height = rect.height - padding * 2;
+      context.strokeStyle = "rgba(238,244,242,0.08)";
+      context.lineWidth = 1;
+      for (let i = 0; i <= 4; i += 1) {
+        const y = padding + height * (i / 4);
+        context.beginPath();
+        context.moveTo(padding, y);
+        context.lineTo(padding + width, y);
+        context.stroke();
+      }
+
+      const data = items.slice(0, 80).map((item) => Number(item.retention || 0)).reverse();
+      if (!data.length) {
+        context.fillStyle = "rgba(157,169,166,0.8)";
+        context.font = "12px Consolas, monospace";
+        context.fillText("NO RETENTION SAMPLES", padding, padding + 18);
+        return;
+      }
+
+      context.beginPath();
+      data.forEach((value, index) => {
+        const x = padding + (data.length === 1 ? width : width * (index / (data.length - 1)));
+        const y = padding + height - height * Math.max(0, Math.min(1, value));
+        if (index === 0) context.moveTo(x, y);
+        else context.lineTo(x, y);
+      });
+      const gradient = context.createLinearGradient(padding, 0, padding + width, 0);
+      gradient.addColorStop(0, "#34d399");
+      gradient.addColorStop(0.62, "#f3b43f");
+      gradient.addColorStop(1, "#f45d5d");
+      context.strokeStyle = gradient;
+      context.lineWidth = 2;
+      context.stroke();
+
+      data.forEach((value, index) => {
+        const x = padding + (data.length === 1 ? width : width * (index / (data.length - 1)));
+        const y = padding + height - height * Math.max(0, Math.min(1, value));
+        context.fillStyle = value < 0.15 ? "#f45d5d" : value < 0.6 ? "#f3b43f" : "#34d399";
+        context.beginPath();
+        context.arc(x, y, 2.4, 0, Math.PI * 2);
+        context.fill();
+      });
+    }
+
+    function renderOffline(error) {
+      setDot("offline");
+      elements.connectionText.textContent = "OFFLINE";
+      elements.liveCaption.textContent = error.message || "middleware unavailable";
+      elements.lastRefresh.textContent = `SYNC ${new Date().toLocaleTimeString()}`;
+      setMeter(elements.cacheMeter, 0, "offline");
+      setMeter(elements.retentionMeter, 0, "offline");
+      setMeter(elements.throughputMeter, 0, "offline");
+      setMeter(elements.memoryMeter, 0, "offline");
+      elements.metricRows.innerHTML = '<div class="empty">Middleware endpoint unavailable</div>';
+      drawRetention([]);
+    }
+
+    window.addEventListener("resize", () => drawRetention([]));
+    window.setInterval(poll, pollMs);
+    poll();
+  </script>
+</body>
+</html>
